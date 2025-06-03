@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  School, Bell, Search, Menu, X, Images, Plus, LogOut
+  School, Bell, Search, Menu, X, Images, Plus, LogOut, MessageSquare, Mail
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import GalleryGrid from './GallaryGrid';
 import UploadModal from './UploadModal';
+import ContactManagement from './ContactManagement'; // Import the new component
 import axios from 'axios';
 
 // Updated interface to include buffer data
@@ -33,6 +34,7 @@ const AdminDashboard = () => {
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'gallery' | 'contacts'>('gallery'); // Add tab state
 
   const { logout, token } = useAuth();
 
@@ -45,6 +47,14 @@ const AdminDashboard = () => {
 
   // API client with auth header
   const apiClient = axios.create({
+    baseURL: 'https://vidya-vista-rebuild.onrender.com', // Updated to deployed link for contacts
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  // Gallery API client (keep the original for gallery)
+  const galleryApiClient = axios.create({
     baseURL: 'https://vidya-vista-rebuild.onrender.com',
     headers: {
       Authorization: `Bearer ${token}`
@@ -95,7 +105,7 @@ const AdminDashboard = () => {
     if (!confirm('Are you sure you want to delete this image?')) return;
 
     try {
-      const response = await apiClient.delete(`/gallery/${id}`);
+      const response = await galleryApiClient.delete(`/gallery/${id}`);
       
       if (response.data.success) {
         setGalleryItems(prev => prev.filter(item => item.id !== id));
@@ -111,7 +121,7 @@ const AdminDashboard = () => {
   // Edit image
   const handleEditImage = async (id: string, data: { title: string; category: string }) => {
     try {
-      const response = await apiClient.put(`/gallery/${id}`, data);
+      const response = await galleryApiClient.put(`/gallery/${id}`, data);
       
       if (response.data.success) {
         // Update the item in the local state
@@ -150,12 +160,14 @@ const AdminDashboard = () => {
   };
 
   useEffect(() => {
-    fetchGalleryItems();
-  }, []);
+    if (activeTab === 'gallery') {
+      fetchGalleryItems();
+    }
+  }, [activeTab]);
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50">
-      {/* Sidebar - Keep existing sidebar code */}
+      {/* Sidebar */}
       <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white/90 backdrop-blur-sm shadow-xl transition-transform duration-300 ease-in-out border-r border-gray-200`}>
         {/* Sidebar Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -165,7 +177,7 @@ const AdminDashboard = () => {
             </div>
             <div>
               <h2 className="text-lg font-bold text-gray-800">SSVV Admin</h2>
-              <p className="text-xs text-gray-600">Gallery Manager</p>
+              <p className="text-xs text-gray-600">Management Panel</p>
             </div>
           </div>
           <button 
@@ -178,25 +190,46 @@ const AdminDashboard = () => {
 
         {/* Navigation */}
         <nav className="p-4 space-y-2">
-          <div className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg">
+          <button
+            onClick={() => setActiveTab('gallery')}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+              activeTab === 'gallery'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
             <Images className="w-5 h-5" />
             <span className="font-medium">Gallery Management</span>
-          </div>
+          </button>
+          
+          <button
+            onClick={() => setActiveTab('contacts')}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+              activeTab === 'contacts'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <MessageSquare className="w-5 h-5" />
+            <span className="font-medium">Contact Management</span>
+          </button>
         </nav>
 
-        {/* Category Stats */}
-        <div className="p-4 space-y-3">
-          <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Categories</h3>
-          {categoryStats.map((cat) => (
-            <div key={cat.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <div className={`w-3 h-3 bg-${cat.color}-500 rounded-full`}></div>
-                <span className="text-sm font-medium text-gray-700">{cat.name}</span>
+        {/* Category Stats - Only show for gallery */}
+        {activeTab === 'gallery' && (
+          <div className="p-4 space-y-3">
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Categories</h3>
+            {categoryStats.map((cat) => (
+              <div key={cat.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <div className={`w-3 h-3 bg-${cat.color}-500 rounded-full`}></div>
+                  <span className="text-sm font-medium text-gray-700">{cat.name}</span>
+                </div>
+                <span className="text-sm font-bold text-gray-600">{cat.count}</span>
               </div>
-              <span className="text-sm font-bold text-gray-600">{cat.count}</span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Logout Button */}
         <div className="absolute bottom-4 left-4 right-4">
@@ -224,75 +257,90 @@ const AdminDashboard = () => {
               </button>
               <div>
                 <h1 className="text-2xl font-bold text-gray-800">
-                  Gallery Management
+                  {activeTab === 'gallery' ? 'Gallery Management' : 'Contact Management'}
                 </h1>
-                <p className="text-sm text-gray-600">Manage school gallery images and categories</p>
+                <p className="text-sm text-gray-600">
+                  {activeTab === 'gallery' 
+                    ? 'Manage school gallery images and categories'
+                    : 'View and manage contact form submissions'
+                  }
+                </p>
               </div>
             </div>
 
             <div className="flex items-center space-x-4">
-              {/* Search */}
-              <div className="relative hidden md:block">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder="Search images..."
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50"
-                />
-              </div>
+              {/* Search - Only show for gallery */}
+              {activeTab === 'gallery' && (
+                <div className="relative hidden md:block">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder="Search images..."
+                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50"
+                  />
+                </div>
+              )}
 
-              {/* Add Image Button */}
-              <button
-                onClick={() => setShowUploadModal(true)}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-lg"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add Image</span>
-              </button>
+              {/* Add Image Button - Only show for gallery */}
+              {activeTab === 'gallery' && (
+                <button
+                  onClick={() => setShowUploadModal(true)}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-lg"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Image</span>
+                </button>
+              )}
             </div>
           </div>
         </header>
 
-        {/* Gallery Content */}
+        {/* Content Area */}
         <main className="flex-1 overflow-auto p-6">
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-800">Gallery Images</h2>
-              <p className="text-sm text-gray-600">Total: {galleryItems.length} images</p>
-            </div>
-          </div>
+          {activeTab === 'gallery' ? (
+            <div>
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-gray-800">Gallery Images</h2>
+                  <p className="text-sm text-gray-600">Total: {galleryItems.length} images</p>
+                </div>
+              </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-600 text-sm">{error}</p>
-              <button 
-                onClick={fetchGalleryItems}
-                className="mt-2 text-red-700 hover:text-red-900 text-sm font-medium"
-              >
-                Try Again
-              </button>
+              {/* Error Message */}
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-600 text-sm">{error}</p>
+                  <button 
+                    onClick={fetchGalleryItems}
+                    className="mt-2 text-red-700 hover:text-red-900 text-sm font-medium"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              )}
+
+              {/* Gallery Grid Component */}
+              <GalleryGrid 
+                items={galleryItems}
+                categories={categories}
+                loading={loading}
+                onDelete={handleDeleteImage}
+                onEdit={handleEditImage}
+              />
             </div>
+          ) : (
+            <ContactManagement apiClient={apiClient} />
           )}
-
-          {/* Gallery Grid Component */}
-          <GalleryGrid 
-            items={galleryItems}
-            categories={categories}
-            loading={loading}
-            onDelete={handleDeleteImage}
-            onEdit={handleEditImage}
-          />
         </main>
       </div>
 
-      {/* Upload Modal Component */}
-      {showUploadModal && (
+      {/* Upload Modal Component - Only show for gallery */}
+      {showUploadModal && activeTab === 'gallery' && (
         <UploadModal
           categories={categories}
           onClose={() => setShowUploadModal(false)}
           onSuccess={handleUploadSuccess}
-          apiClient={apiClient}
+          apiClient={galleryApiClient}
         />
       )}
 
