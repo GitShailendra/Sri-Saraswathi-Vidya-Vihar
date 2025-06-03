@@ -6,12 +6,15 @@ const bodyParser = require('body-parser');
 const connectDB = require('./config/db');
 const adminRoutes = require('./routes/AdminRoutes');
 const gallaryRoutes = require('./routes/gallaryRoutes')
+const contactRoutes = require('./routes/ContactRoutes');
+
 connectDB();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/admin', adminRoutes);
 app.use('/gallery', gallaryRoutes);
+app.use('/contact', contactRoutes);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT,()=>{
