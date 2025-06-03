@@ -41,7 +41,7 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('https://vidya-vista-rebuild.onrender.com/contact/submit', {
+      const response = await fetch('https://sri-saraswathi-vidya-vihar.onrender.com/contact/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

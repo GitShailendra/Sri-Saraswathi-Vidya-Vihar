@@ -24,7 +24,7 @@ const Gallery = () => {
     { id: 'activities', name: 'Activities' }
   ];
 
-  const API_BASE_URL =  'https://vidya-vista-rebuild.onrender.com';
+  const API_BASE_URL =  'https://sri-saraswathi-vidya-vihar.onrender.com';
 
   // Fetch images from API
   const fetchGalleryImages = async (category = 'all', page = 1, limit = 50) => {

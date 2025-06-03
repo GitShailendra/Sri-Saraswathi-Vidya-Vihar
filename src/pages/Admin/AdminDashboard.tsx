@@ -47,7 +47,7 @@ const AdminDashboard = () => {
 
   // API client with auth header
   const apiClient = axios.create({
-    baseURL: 'https://vidya-vista-rebuild.onrender.com', // Updated to deployed link for contacts
+    baseURL: 'https://sri-saraswathi-vidya-vihar.onrender.com', // Updated to deployed link for contacts
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -55,7 +55,7 @@ const AdminDashboard = () => {
 
   // Gallery API client (keep the original for gallery)
   const galleryApiClient = axios.create({
-    baseURL: 'https://vidya-vista-rebuild.onrender.com',
+    baseURL: 'https://sri-saraswathi-vidya-vihar.onrender.com',
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -68,7 +68,7 @@ const AdminDashboard = () => {
       setError(null);
       
       console.log('Fetching gallery items...');
-      const response = await axios.get('https://vidya-vista-rebuild.onrender.com/gallery');
+      const response = await axios.get('https://sri-saraswathi-vidya-vihar.onrender.com/gallery');
       
       console.log('Gallery API Response:', response.data);
       
