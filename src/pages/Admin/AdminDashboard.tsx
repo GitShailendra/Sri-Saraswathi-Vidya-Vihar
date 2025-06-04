@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  School, Bell, Search, Menu, X, Images, Plus, LogOut, MessageSquare, Mail
+  School, Bell, Search, Menu, X, Images, Plus, LogOut, MessageSquare, Mail, Trophy
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import GalleryGrid from './GallaryGrid';
 import UploadModal from './UploadModal';
-import ContactManagement from './ContactManagement'; // Import the new component
+import ContactManagement from './ContactManagement';
+import ResultsManagement from './ResultManagement'; // Import the new component
 import axios from 'axios';
 
 import logo from "../../assets/SriVidyaLogo.png"
@@ -36,7 +37,7 @@ const AdminDashboard = () => {
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'gallery' | 'contacts'>('gallery'); // Add tab state
+  const [activeTab, setActiveTab] = useState<'gallery' | 'contacts' | 'results'>('gallery'); // Add results tab
 
   const { logout, token } = useAuth();
 
@@ -47,9 +48,16 @@ const AdminDashboard = () => {
     { id: 'activities', name: 'Activities', color: 'purple' }
   ];
 
-  // API client with auth header
-  const apiClient = axios.create({
-    baseURL: 'https://vidya-vista-rebuild.onrender.com', // Updated to deployed link for contacts
+  const resultsApiClient = axios.create({
+    baseURL: 'https://sri-saraswathi-vidya-vihar.onrender.com',
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  // Original API client for contacts
+  const contactsApiClient = axios.create({
+    baseURL: 'https://sri-saraswathi-vidya-vihar.onrender.com',
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -57,7 +65,7 @@ const AdminDashboard = () => {
 
   // Gallery API client (keep the original for gallery)
   const galleryApiClient = axios.create({
-    baseURL: 'https://vidya-vista-rebuild.onrender.com',
+    baseURL: 'https://sri-saraswathi-vidya-vihar.onrender.com',
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -70,7 +78,7 @@ const AdminDashboard = () => {
       setError(null);
       
       console.log('Fetching gallery items...');
-      const response = await axios.get('https://vidya-vista-rebuild.onrender.com/gallery');
+      const response = await axios.get('https://sri-saraswathi-vidya-vihar.onrender.com/gallery');
       
       console.log('Gallery API Response:', response.data);
       
@@ -161,11 +169,39 @@ const AdminDashboard = () => {
     logout();
   };
 
+  // Get the appropriate page title and description based on active tab
+  const getPageInfo = () => {
+    switch (activeTab) {
+      case 'gallery':
+        return {
+          title: 'Gallery Management',
+          description: 'Manage school gallery images and categories'
+        };
+      case 'contacts':
+        return {
+          title: 'Contact Management',
+          description: 'View and manage contact form submissions'
+        };
+      case 'results':
+        return {
+          title: 'Results Management',
+          description: 'Manage student academic results and achievements'
+        };
+      default:
+        return {
+          title: 'Gallery Management',
+          description: 'Manage school gallery images and categories'
+        };
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'gallery') {
       fetchGalleryItems();
     }
   }, [activeTab]);
+
+  const pageInfo = getPageInfo();
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50">
@@ -217,6 +253,18 @@ const AdminDashboard = () => {
             <MessageSquare className="w-5 h-5" />
             <span className="font-medium">Contact Management</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('results')}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+              activeTab === 'results'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Trophy className="w-5 h-5" />
+            <span className="font-medium">Results Management</span>
+          </button>
         </nav>
 
         {/* Category Stats - Only show for gallery */}
@@ -261,13 +309,10 @@ const AdminDashboard = () => {
               </button>
               <div>
                 <h1 className="text-2xl font-bold text-gray-800">
-                  {activeTab === 'gallery' ? 'Gallery Management' : 'Contact Management'}
+                  {pageInfo.title}
                 </h1>
                 <p className="text-sm text-gray-600">
-                  {activeTab === 'gallery' 
-                    ? 'Manage school gallery images and categories'
-                    : 'View and manage contact form submissions'
-                  }
+                  {pageInfo.description}
                 </p>
               </div>
             </div>
@@ -301,7 +346,7 @@ const AdminDashboard = () => {
 
         {/* Content Area */}
         <main className="flex-1 overflow-auto p-6">
-          {activeTab === 'gallery' ? (
+          {activeTab === 'gallery' && (
             <div>
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-4">
@@ -332,8 +377,14 @@ const AdminDashboard = () => {
                 onEdit={handleEditImage}
               />
             </div>
-          ) : (
-            <ContactManagement apiClient={apiClient} />
+          )}
+
+          {activeTab === 'contacts' && (
+            <ContactManagement apiClient={contactsApiClient} />
+          )}
+
+          {activeTab === 'results' && (
+            <ResultsManagement apiClient={resultsApiClient} />
           )}
         </main>
       </div>

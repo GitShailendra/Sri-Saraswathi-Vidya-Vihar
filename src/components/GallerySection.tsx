@@ -8,7 +8,7 @@ const GallerySection = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const API_BASE_URL =  'https://vidya-vista-rebuild.onrender.com';
+  const API_BASE_URL =  'https://sri-saraswathi-vidya-vihar.onrender.com';
   
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
