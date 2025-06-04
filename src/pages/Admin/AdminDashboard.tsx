@@ -8,6 +8,8 @@ import UploadModal from './UploadModal';
 import ContactManagement from './ContactManagement'; // Import the new component
 import axios from 'axios';
 
+import logo from "../../assets/SriVidyaLogo.png"
+
 // Updated interface to include buffer data
 interface GalleryItem {
   id: string;
@@ -172,9 +174,11 @@ const AdminDashboard = () => {
         {/* Sidebar Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-lg shadow-lg">
-              <School className="w-6 h-6 text-white" />
-            </div>
+             <img 
+              src={logo} 
+              alt="Sri Saraswathi Vidya Vihar Logo"
+              className="w-16 h-16 object-contain "
+            />
             <div>
               <h2 className="text-lg font-bold text-gray-800">SSVV Admin</h2>
               <p className="text-xs text-gray-600">Management Panel</p>
