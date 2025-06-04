@@ -12,7 +12,7 @@ const {
   toggleResultStatus,
   getStudentImage,
   resultValidation
-} = require('../controllers/resultController');
+} = require('../controllers/ResultController');
 
 // Public routes
 router.get('/', getResults);
