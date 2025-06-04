@@ -1,17 +1,25 @@
-
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import video from "../assets/Video/videoBG.mp4";
+
 const HeroBanner = () => {
   return (
-    <section className="relative min-h-screen flex items-center pt-16">
-      {/* Background Image with Overlay */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center z-0"
-        style={{ 
-          backgroundImage: `url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2000')`,
-        }}
-      >
+    <section className="relative min-h-screen flex items-center pt-16 overflow-hidden">
+      {/* Background Video with Overlay */}
+      <div className="absolute inset-0 z-0">
+        <video
+          className="absolute inset-0 w-full h-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+        >
+          <source src={video} type="video/mp4" />
+          <source src="/path/to/your/school-video.webm" type="video/webm" />
+          {/* Fallback image if video doesn't load */}
+          Your browser does not support the video tag.
+        </video>
         <div className="absolute inset-0 bg-gradient-to-r from-school-dark/80 to-school-blue/50"></div>
       </div>
 
@@ -21,7 +29,7 @@ const HeroBanner = () => {
             Welcome to <span className="text-school-orange">Sri Saraswathi Vidya Vihar</span>
           </h1>
           <p className="text-lg md:text-xl opacity-90 mb-8">
-            Empowering young minds since 1988 with excellence in education, character building, and holistic development.
+            Empowering young minds since 1988 with EXPERTISE, EMPOWERMENT AND EXCELLENCE, character building, and holistic development.
           </p>
           <div className="flex flex-wrap gap-4">
             <Link to="/admissions" className="bg-school-orange hover:bg-school-orange/90 text-white font-medium px-8 py-3 rounded-md transition-all transform hover:scale-105 flex items-center">
@@ -62,8 +70,8 @@ const HeroBanner = () => {
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm opacity-80">Happy Students</p>
-                <p className="text-xl font-semibold">1000+</p>
+                <p className="text-sm opacity-80">Success Stories</p>
+                <p className="text-xl font-semibold">20000+</p>
               </div>
             </div>
           </div>

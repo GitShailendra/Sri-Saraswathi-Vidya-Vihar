@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Eye, EyeOff, User, Lock, School } from 'lucide-react';
+import { Eye, EyeOff, User, Lock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
+
+import logo from "../../assets/SriVidyaLogo.png";
 
 const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -96,9 +98,12 @@ const AdminLogin = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-3 rounded-full shadow-lg">
-              <School className="w-8 h-8 text-white" />
-            </div>
+            {/* Logo Image */}
+            <img 
+              src={logo} 
+              alt="Sri Saraswathi Vidya Vihar Logo"
+              className="w-16 h-16 object-contain"
+            />
           </div>
           <h1 className="text-2xl font-bold text-gray-800 mb-2">
             Sri Saraswathi Vidya Vihar

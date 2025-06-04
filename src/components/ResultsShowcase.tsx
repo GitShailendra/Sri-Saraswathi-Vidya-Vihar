@@ -214,10 +214,7 @@ const ResultsShowcase = () => {
             <Tab.Panels className="mt-6">
               {/* Top Performers Panel */}
               <Tab.Panel className="rounded-xl bg-white p-6 shadow">
-                <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Our Top Performers</h3>
-                  <p className="text-gray-600">Celebrating excellence across all academic years</p>
-                </div>
+            
                 
                 
                 

@@ -14,7 +14,6 @@ const Academics = () => {
             Academics
           </h1>
           
-          <AcademicsSection />
           
           <div className="mt-16">
             <h2 className="text-2xl md:text-3xl font-serif font-bold text-school-dark mb-6">Curriculum Overview</h2>

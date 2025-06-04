@@ -75,9 +75,10 @@ const PrivacyPolicy = () => {
               If you have any questions about this Privacy Policy, please contact us:
             </p>
             <ul>
-              <li>By email: info@srisaraswathividyavihar.edu</li>
-              <li>By phone: +91 98765 43210</li>
-              <li>By mail: 12-3-456, Main Street, City Name, State - 500001</li>
+              <li>By email: srisaraswathividyavihar@gmail.com</li>
+              <li>By phone: +91 90596 29689
++91 73375 53175</li>
+              <li>By mail: </li>
             </ul>
             
             <p className="text-sm text-gray-600 mt-8">

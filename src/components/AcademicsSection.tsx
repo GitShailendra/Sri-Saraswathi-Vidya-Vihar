@@ -2,6 +2,8 @@
 import { Link } from 'react-router-dom';
 import { BookOpen, Users, Pencil, Award, Clock } from 'lucide-react';
 
+import image from "../assets/Images/Co-Curricular.jpg"
+import image2 from "../assets/Images/academics.jpg"
 const AcademicsSection = () => {
   return (
     <section className="py-20 bg-white" id="academics">
@@ -20,7 +22,7 @@ const AcademicsSection = () => {
           <div className="bg-school-soft-blue rounded-lg overflow-hidden shadow-md group hover:shadow-xl transition-shadow animate-fade-in">
             <div className="relative h-64 overflow-hidden">
               <img 
-                src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=1200"
+                src={image2}
                 alt="Academic Programs"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
@@ -75,7 +77,7 @@ const AcademicsSection = () => {
           <div className="bg-school-soft-yellow rounded-lg overflow-hidden shadow-md group hover:shadow-xl transition-shadow animate-fade-in" style={{ animationDelay: '200ms' }}>
             <div className="relative h-64 overflow-hidden">
               <img 
-                src="https://images.unsplash.com/photo-1540479859555-17af45c78602?q=80&w=1200"
+                src={image}
                 alt="Co-Curricular Activities"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />

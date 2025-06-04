@@ -1,8 +1,10 @@
-
 import Navigation from '../components/Navigation';
 import AboutSection from '../components/AboutSection';
 import Footer from '../components/Footer';
 import ScrollToTop from '../components/ScrollToTop';
+import LeadershipSection from '../pages/LeadershipSection'; // Import the new component
+
+import founder from "../assets/Images/Founder.jpg";
 
 const About = () => {
   return (
@@ -34,15 +36,20 @@ const About = () => {
               We view education as a collaborative journey involving students, teachers, and parents. By creating a supportive learning environment, we enable our students to discover their potential and develop into responsible global citizens.
             </p>
           </div>
-
+        </div>
+        
+        {/* Add the Leadership Section here */}
+        <LeadershipSection />
+        
+        <div className="container mx-auto px-4 py-8">
           <div className="mt-16 p-8 bg-school-soft-blue rounded-lg shadow-md">
             <h2 className="text-2xl font-serif font-bold text-school-dark mb-6">Founder's Vision</h2>
             <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="md:w-1/3">
                 <div className="rounded-full overflow-hidden w-48 h-48 mx-auto border-4 border-white shadow-lg">
-                  <img 
-                    src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=400" 
-                    alt="Sri Kannuri Sanjeevi, Founder" 
+                  <img
+                    src={founder}
+                    alt="Sri Kannuri Sanjeevi, Founder"
                     className="w-full h-full object-cover"
                   />
                 </div>

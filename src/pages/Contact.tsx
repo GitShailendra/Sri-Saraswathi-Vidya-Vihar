@@ -130,7 +130,8 @@ const Contact = () => {
               </div>
               <h3 className="text-lg font-semibold mb-2">Call Us</h3>
               <p className="text-gray-600 mb-1">
-                Phone: +91 98765 43210
+                Phone: +91 90596 29689
++91 73375 53175
               </p>
               <p className="text-gray-600">
                 Toll Free: 1800-123-4567
