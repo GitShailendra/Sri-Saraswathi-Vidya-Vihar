@@ -62,8 +62,8 @@ const HeroBanner = () => {
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm opacity-80">Happy Students</p>
-                <p className="text-xl font-semibold">1000+</p>
+                <p className="text-sm opacity-80">Success Stories</p>
+                <p className="text-xl font-semibold">20000+</p>
               </div>
             </div>
           </div>

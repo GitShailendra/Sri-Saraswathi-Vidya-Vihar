@@ -117,7 +117,7 @@ const ResultsShowcase = () => {
               {/* 2023 Results Panel */}
               <Tab.Panel className="rounded-xl bg-white p-4 shadow">
                 <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-school-dark mb-2">SSC Results 2023</h3>
+                  <h3 className="text-2xl font-bold text-school-dark mb-2">SSC Results 2025</h3>
                   <p className="text-gray-600">Our top performers have made us proud once again</p>
                 </div>
                 

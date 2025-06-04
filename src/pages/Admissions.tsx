@@ -101,7 +101,8 @@ const Admissions = () => {
             <div className="flex flex-col md:flex-row justify-center gap-6">
               <div className="flex items-center justify-center">
                 <Phone className="w-5 h-5 text-school-orange mr-2" />
-                <span>+91 98765 43210</span>
+                <span>+91 90596 29689
++91 73375 53175</span>
               </div>
               <div className="flex items-center justify-center">
                 <Calendar className="w-5 h-5 text-school-orange mr-2" />

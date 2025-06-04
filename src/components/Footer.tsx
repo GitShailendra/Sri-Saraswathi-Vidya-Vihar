@@ -75,22 +75,23 @@ const Footer = () => {
             <ul className="space-y-3 text-sm">
               <li className="flex">
                 <MapPin size={18} className="mr-2 flex-shrink-0 text-school-orange" />
-                <span>12-3-456, Main Street, City Name, State - 500001</span>
+                <span>8-4-19 Sri Saraswathi Vidya Vihar,Ashok nagar, Gajuwaka, Visakhapatnam, Andhra Pradesh - 530026</span>
               </li>
               <li className="flex">
                 <Phone size={18} className="mr-2 flex-shrink-0 text-school-orange" />
-                <span>+91 98765 43210</span>
+                <span>+91 90596 29689
++91 73375 53175</span>
               </li>
               <li className="flex">
                 <Mail size={18} className="mr-2 flex-shrink-0 text-school-orange" />
-                <span>info@srisaraswathividyavihar.edu</span>
+                <span>srisaraswathividyavihar@gmail.com</span>
               </li>
             </ul>
 
             <div className="mt-6">
               <h5 className="font-medium text-sm mb-2">School Hours</h5>
-              <p className="text-sm opacity-80">Monday - Friday: 8:00 AM - 4:30 PM</p>
-              <p className="text-sm opacity-80">Saturday: 8:00 AM - 12:30 PM</p>
+              <p className="text-sm opacity-80">Monday - Saturday: 8:00 AM - 5:00 PM</p>
+              <p className="text-sm opacity-80">Sunday: 9:00 AM - 12:00 PM</p>
             </div>
           </div>
         </div>

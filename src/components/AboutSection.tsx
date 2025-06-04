@@ -1,6 +1,8 @@
 
 import { Link } from 'react-router-dom';
-import logo from "../assets/SriVidyaLogo.png"
+import logo from "../assets/SriVidyaLogo.png";
+import image from "../assets/Images/SchoolBuilding.png";
+
 const AboutSection = () => {
   return (
     <section className="py-20 bg-white" id="about">
@@ -10,7 +12,7 @@ const AboutSection = () => {
             <div className="relative">
               <div className="rounded-lg overflow-hidden shadow-xl">
                 <img
-                  src="https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=1200"
+                  src={image}
                   alt="Students in classroom"
                   className="w-full h-auto object-cover"
                 />
@@ -62,7 +64,7 @@ const AboutSection = () => {
               </blockquote>
             </div>
 
-            <div className="mt-8">
+            {/* <div className="mt-8">
               <Link 
                 to="/about"
                 className="inline-flex items-center font-medium text-school-blue hover:text-school-orange transition-colors"
@@ -72,7 +74,7 @@ const AboutSection = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
                 </svg>
               </Link>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

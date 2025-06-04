@@ -1,36 +1,36 @@
 
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
-
+import placeholder from "../assets/Icons/placeholder.svg";
 const TestimonialSection = () => {
   const testimonials = [
     {
       id: 1,
-      quote: "Sri Saraswathi Vidya Vihar has provided my child with not just academic excellence but also moral values. The teachers are dedicated and caring, and the infrastructure is top-notch.",
-      author: "Priya Sharma",
-      role: "Parent of Class 8 Student",
-      imageUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=150"
+      quote: "Both my children study here, and as a parent, I closely follow their academics. The management ensures strong focus in every class. If there’s any issue, Principal Mr. Sanjeev Garu and Mr. Prudvi Garu address it promptly and ensure parent satisfaction. I highly recommend this school for a bright future.",
+      author: "Shankar",
+      role: "Parent",
+      imageUrl: placeholder
     },
     {
       id: 2,
       quote: "I've seen remarkable growth in my daughter's personality since she joined SSVV. The school's focus on holistic development and extracurricular activities has helped her discover her talents.",
       author: "Rajesh Kumar",
       role: "Parent of Class 5 Student",
-      imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150"
+      imageUrl: placeholder
     },
     {
       id: 3,
       quote: "As an alumnus, I can attest to the strong foundation SSVV provides. The values and education I received here have shaped my career and life choices significantly.",
       author: "Vikram Singh",
       role: "Alumnus, Batch of 2015",
-      imageUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=150"
+      imageUrl: placeholder
     },
     {
       id: 4,
       quote: "The supportive environment at Sri Saraswathi Vidya Vihar encourages students to explore their interests and develop critical thinking skills. We're grateful to be part of this community.",
       author: "Meera Patel",
       role: "Parent of Class 10 Student",
-      imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=150"
+      imageUrl: placeholder
     }
   ];
 
