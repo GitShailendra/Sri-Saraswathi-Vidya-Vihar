@@ -12,6 +12,9 @@ const resultSchema = new mongoose.Schema({
   imageUrl: {
     type: String, // For URL-based uploads
   },
+  resultPosterData: {  // ADD THIS NEW FIELD
+    type: Buffer, // Store result poster image
+  },
   studentName: {
     type: String,
     required: true,
@@ -26,6 +29,10 @@ const resultSchema = new mongoose.Schema({
     type: Number,
     required: true,
     min: 1
+  },
+  marks:{
+    type:String,
+    required: true,
   },
   uploadType: {
     type: String,

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Trophy, Plus, Edit3, Trash2, Eye, EyeOff, Search,
-  ChevronLeft, ChevronRight, Users, Calendar
+  ChevronLeft, ChevronRight, Users, Calendar,
+  X, Upload
 } from 'lucide-react';
 
 interface Result {
@@ -16,6 +17,7 @@ interface Result {
   studentName: string;
   createdAt: string;
   updatedAt: string;
+  marks: string;
   createdBy?: {
     name: string;
     email: string;
@@ -60,7 +62,7 @@ const ResultsManagement: React.FC<ResultsManagementProps> = ({ apiClient }) => {
       if (filterYear) params.append('year', filterYear);
 
       const response = await apiClient.get(`/results/admin?${params}`);
-      
+      console.log('API Response:', response.data);
       if (response.data.success) {
         setResults(response.data.data);
         setCurrentPage(response.data.pagination.currentPage);
@@ -231,7 +233,7 @@ const ResultsManagement: React.FC<ResultsManagementProps> = ({ apiClient }) => {
     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name</th>
     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
-    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marks</th>
     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -275,7 +277,7 @@ const ResultsManagement: React.FC<ResultsManagementProps> = ({ apiClient }) => {
     <td className="px-6 py-4 whitespace-nowrap">
       <div className="flex items-center">
         <span className="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full">
-          {result.rank}/{result.totalStudents}
+          {result.marks}
         </span>
       </div>
     </td>
@@ -426,6 +428,31 @@ const ResultsManagement: React.FC<ResultsManagementProps> = ({ apiClient }) => {
 };
 
 // Result Modal Component
+interface Student {
+  name: string;
+  marks: string;
+  image?: File | null;
+  imagePreview?: string | null;
+}
+
+interface Result {
+  _id: string;
+  year: string;
+  rank: number; 
+  studentImageData?: string; 
+  totalStudents: number;
+  imageUrl?: string;
+  uploadType?: 'file' | 'url';
+  isActive: boolean;
+  studentName: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: {
+    name: string;
+    email: string;
+  };
+}
+
 interface ResultModalProps {
   result?: Result | null;
   onClose: () => void;
@@ -434,33 +461,134 @@ interface ResultModalProps {
 }
 
 const ResultModal: React.FC<ResultModalProps> = ({ result, onClose, onSuccess, apiClient }) => {
+  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     year: result?.year || '',
-    imageUrl: result?.imageUrl || '',
-    rank: result?.rank || '',
-    totalStudents: result?.totalStudents || '', 
-    studentName: result?.studentName || '', 
-
-
+    numberOfTopPerformers: 1,
   });
+  
+  const [students, setStudents] = useState<Student[]>([]);
+  const [currentStudentIndex, setCurrentStudentIndex] = useState(0);
+  const [currentStudent, setCurrentStudent] = useState<Student>({
+    name: '',
+    marks: '',
+    image: null,
+    imagePreview: null
+  });
+  
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(
-    result?.studentImageData || null
-  );
-  const [uploadType, setUploadType] = useState<'file' | 'url'>('file');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<any>({});
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInitialFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: name === 'numberOfTopPerformers' ? parseInt(value) : value 
+    }));
+    if (errors[name]) {
+      setErrors((prev: any) => ({ ...prev, [name]: null }));
+    }
+  };
+
+  const handleStudentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setCurrentStudent(prev => ({ 
+      ...prev, 
+      [name]: value 
+    }));
+    if (errors[name]) {
+      setErrors((prev: any) => ({ ...prev, [name]: null }));
+    }
+  };
+
+  const handleNextStep = () => {
+    if (step === 1) {
+      if (!formData.year || formData.numberOfTopPerformers < 1) {
+        setErrors({ year: !formData.year ? 'Year is required' : null });
+        return;
+      }
+      setStudents(new Array(formData.numberOfTopPerformers).fill(null).map(() => ({
+        name: '',
+        marks: '',
+        image: null,
+        imagePreview: null
+      })));
+      setCurrentStudent({ name: '', marks: '', image: null, imagePreview: null });
+      setCurrentStudentIndex(0);
+      setStep(2);
+    }
+  };
+
+  const handleStudentSubmit = () => {
+    if (!currentStudent.name || !currentStudent.marks) {
+      setErrors({
+        name: !currentStudent.name ? 'Student name is required' : null,
+        marks: !currentStudent.marks ? 'Marks are required' : null
+      });
+      return;
+    }
+
+    const updatedStudents = [...students];
+    updatedStudents[currentStudentIndex] = { ...currentStudent };
+    setStudents(updatedStudents);
+
+    if (currentStudentIndex < formData.numberOfTopPerformers - 1) {
+      setCurrentStudentIndex(currentStudentIndex + 1);
+      setCurrentStudent({
+        name: '',
+        marks: '',
+        image: null,
+        imagePreview: null
+      });
+      setErrors({});
+    } else {
+      setStep(3);
+    }
+  };
+
+  const handlePreviousStudent = () => {
+    if (currentStudentIndex > 0) {
+      setCurrentStudentIndex(currentStudentIndex - 1);
+      setCurrentStudent(students[currentStudentIndex - 1]);
+      setErrors({});
+    }
+  };
+
+  const handleStudentImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         alert('Please select a valid image file');
         return;
       }
       
-      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setCurrentStudent(prev => ({
+          ...prev,
+          image: file,
+          imagePreview: e.target?.result as string
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleResultPosterSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file');
+        return;
+      }
+      
       if (file.size > 5 * 1024 * 1024) {
         alert('File size must be less than 5MB');
         return;
@@ -468,7 +596,6 @@ const ResultModal: React.FC<ResultModalProps> = ({ result, onClose, onSuccess, a
 
       setSelectedFile(file);
       
-      // Create preview URL
       const reader = new FileReader();
       reader.onload = (e) => {
         setPreviewUrl(e.target?.result as string);
@@ -479,8 +606,15 @@ const ResultModal: React.FC<ResultModalProps> = ({ result, onClose, onSuccess, a
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!selectedFile) {
+      setErrors({ image: 'Result poster image is required' });
+      return;
+    }
+
     console.log('Form submitted!');
     console.log('Form data:', formData);
+    console.log('Students:', students);
     console.log('Selected file:', selectedFile);
     
     setLoading(true);
@@ -489,17 +623,18 @@ const ResultModal: React.FC<ResultModalProps> = ({ result, onClose, onSuccess, a
     try {
       const formDataToSend = new FormData();
       
-      // Append form fields
       formDataToSend.append('year', formData.year);
-      formDataToSend.append('rank', formData.rank.toString());
-      formDataToSend.append('studentName', formData.studentName);
-      formDataToSend.append('totalStudents', formData.totalStudents.toString());
-      // Append image based on upload type
-      if (uploadType === 'file' && selectedFile) {
-        formDataToSend.append('studentImage', selectedFile);
-      } else if (uploadType === 'url' && formData.imageUrl) {
-        formDataToSend.append('imageUrl', formData.imageUrl);
-      }
+      formDataToSend.append('numberOfTopPerformers', formData.numberOfTopPerformers.toString());
+      
+      students.forEach((student, index) => {
+        formDataToSend.append(`students[${index}][name]`, student.name);
+        formDataToSend.append(`students[${index}][marks]`, student.marks);
+        if (student.image) {
+          formDataToSend.append(`studentImages`, student.image);
+        }
+      });
+      
+      formDataToSend.append('resultPoster', selectedFile);
 
       console.log('Making API call...');
       if (result) {
@@ -534,11 +669,16 @@ const ResultModal: React.FC<ResultModalProps> = ({ result, onClose, onSuccess, a
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev: any) => ({ ...prev, [name]: null }));
+  const getStepTitle = () => {
+    switch (step) {
+      case 1:
+        return 'Result Details';
+      case 2:
+        return `Student ${currentStudentIndex + 1} of ${formData.numberOfTopPerformers}`;
+      case 3:
+        return 'Upload Result Poster';
+      default:
+        return 'Add Result';
     }
   };
 
@@ -546,193 +686,347 @@ const ResultModal: React.FC<ResultModalProps> = ({ result, onClose, onSuccess, a
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">
-            {result ? 'Edit Result' : 'Add New Result'}
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-800">
+              {result ? 'Edit Result' : 'Add New Result'}
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="mt-4">
+            <div className="flex items-center space-x-2">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+                1
+              </div>
+              <div className={`h-1 flex-1 ${step >= 2 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+                2
+              </div>
+              <div className={`h-1 flex-1 ${step >= 3 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                step >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+                3
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 mt-2">{getStepTitle()}</p>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Year Field */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Year *
-            </label>
-            <input
-              type="text"
-              name="year"
-              value={formData.year}
-              onChange={handleChange}
-              placeholder="e.g., 2024, 2023-24"
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.year ? 'border-red-500' : 'border-gray-300'
-              }`}
-              required
-            />
-            {errors.year && (
-              <p className="text-red-500 text-xs mt-1">{errors.year}</p>
-            )}
-          </div>
-            <div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Rank *
-  </label>
-  <input
-    type="number"
-    name="rank"
-    value={formData.rank}
-    onChange={handleChange}
-    placeholder="e.g., 1, 2, 3"
-    min="1"
-    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-      errors.rank ? 'border-red-500' : 'border-gray-300'
-    }`}
-    required
-  />
-  {errors.rank && (
-    <p className="text-red-500 text-xs mt-1">{errors.rank}</p>
-  )}
-</div>
-<div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Student Name *
-  </label>
-  <input
-    type="text"
-    name="studentName"
-    value={formData.studentName}
-    onChange={handleChange}
-    placeholder="e.g., John Doe"
-    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-      errors.studentName ? 'border-red-500' : 'border-gray-300'
-    }`}
-    required
-  />
-  {errors.studentName && (
-    <p className="text-red-500 text-xs mt-1">{errors.studentName}</p>
-  )}
-</div>
-<div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Total Students *
-  </label>
-  <input
-    type="number"
-    name="totalStudents"
-    value={formData.totalStudents}
-    onChange={handleChange}
-    placeholder="e.g., 600, 1000"
-    min="1"
-    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-      errors.totalStudents ? 'border-red-500' : 'border-gray-300'
-    }`}
-    required
-  />
-  {errors.totalStudents && (
-    <p className="text-red-500 text-xs mt-1">{errors.totalStudents}</p>
-  )}
-</div>
-
-          {/* Image Upload Section */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Result Image (Optional)
-            </label>
-            
-            {/* Upload Type Toggle */}
-            <div className="flex space-x-4 mb-4">
-              <label className="flex items-center">
+          {/* Step 1: Year and Number of Top Performers */}
+          {step === 1 && (
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Academic Year *
+                </label>
                 <input
-                  type="radio"
-                  name="uploadType"
-                  value="file"
-                  checked={uploadType === 'file'}
-                  onChange={(e) => setUploadType(e.target.value as 'file' | 'url')}
-                  className="mr-2"
+                  type="text"
+                  name="year"
+                  value={formData.year}
+                  onChange={handleInitialFormChange}
+                  placeholder="e.g., 2024, 2023-24"
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.year ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  required
                 />
-                <span className="text-sm">Upload File</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="uploadType"
-                  value="url"
-                  checked={uploadType === 'url'}
-                  onChange={(e) => setUploadType(e.target.value as 'file' | 'url')}
-                  className="mr-2"
-                />
-                <span className="text-sm">Image URL</span>
-              </label>
-            </div>
+                {errors.year && (
+                  <p className="text-red-500 text-xs mt-1">{errors.year}</p>
+                )}
+              </div>
 
-            {uploadType === 'file' ? (
-              <div className="space-y-4">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileSelect}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Number of Top Performers *
+                </label>
+                <select
+                  name="numberOfTopPerformers"
+                  value={formData.numberOfTopPerformers}
+                  onChange={handleInitialFormChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <p className="text-xs text-gray-500">
-                  Supported formats: JPG, PNG, GIF. Max size: 5MB
+                  required
+                >
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                    <option key={num} value={num}>{num}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleNextStep}
+                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 flex items-center space-x-2"
+                >
+                  <span>Next</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Student Details */}
+          {step === 2 && (
+            <div className="space-y-6">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  Enter details for student {currentStudentIndex + 1} of {formData.numberOfTopPerformers}
                 </p>
               </div>
-            ) : (
-              <input
-                type="url"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleChange}
-                placeholder="https://example.com/image.jpg"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            )}
 
-            {/* Image Preview */}
-            {previewUrl && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Student Name *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={currentStudent.name}
+                  onChange={handleStudentChange}
+                  placeholder="e.g., John Doe"
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.name ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  required
+                />
+                {errors.name && (
+                  <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Marks/Score *
+                </label>
+                <input
+                  type="text"
+                  name="marks"
+                  value={currentStudent.marks}
+                  onChange={handleStudentChange}
+                  placeholder="e.g., 586/600, 95.5%"
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.marks ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  required
+                />
+                {errors.marks && (
+                  <p className="text-red-500 text-xs mt-1">{errors.marks}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Student Photo (Optional)
+                </label>
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-gray-400">
+                  <div className="space-y-1 text-center">
+                    <Upload className="mx-auto h-8 w-8 text-gray-400" />
+                    <div className="flex text-sm text-gray-600">
+                      <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                        <span>Upload photo</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleStudentImageSelect}
+                          className="sr-only"
+                        />
+                      </label>
+                      <p className="pl-1">or drag and drop</p>
+                    </div>
+                    <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                  </div>
+                </div>
+
+                {currentStudent.imagePreview && (
+                  <div className="mt-4">
+                    <p className="text-sm font-medium text-gray-700 mb-2">Photo Preview:</p>
+                    <div className="relative inline-block">
+                      <img
+                        src={currentStudent.imagePreview}
+                        alt="Student Photo Preview"
+                        className="w-24 h-24 object-cover rounded-lg border-2 border-gray-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCurrentStudent(prev => ({
+                            ...prev,
+                            image: null,
+                            imagePreview: null
+                          }));
+                        }}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={handlePreviousStudent}
+                  disabled={currentStudentIndex === 0}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 flex items-center space-x-2"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Previous</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleStudentSubmit}
+                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 flex items-center space-x-2"
+                >
+                  <span>
+                    {currentStudentIndex < formData.numberOfTopPerformers - 1 ? 'Next Student' : 'Upload Poster'}
+                  </span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+
               <div className="mt-4">
-                <p className="text-sm font-medium text-gray-700 mb-2">Preview:</p>
-                <div className="relative inline-block">
-                  <img
-                    src={previewUrl}
-                    alt="Preview"
-                    className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPreviewUrl(null);
-                      setSelectedFile(null);
-                      setFormData(prev => ({ ...prev, imageUrl: '' }));
-                    }}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                  >
-                    ×
-                  </button>
+                <p className="text-sm text-gray-600 mb-2">Students Added:</p>
+                <div className="flex flex-wrap gap-2">
+                  {students.map((student, index) => (
+                    <div
+                      key={index}
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        index <= currentStudentIndex && student.name
+                          ? 'bg-green-100 text-green-800'
+                          : index === currentStudentIndex
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      {student.name || `Student ${index + 1}`}
+                    </div>
+                  ))}
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : result ? 'Update Result' : 'Add Result'}
-            </button>
-          </div>
+          {/* Step 3: Upload Result Poster */}
+          {step === 3 && (
+            <div className="space-y-6">
+              <div className="bg-green-50 p-4 rounded-lg">
+                <p className="text-sm text-green-800">
+                  Great! You've added all {formData.numberOfTopPerformers} students. Now upload the result poster image.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Students Summary:</h3>
+                <div className="space-y-2">
+                  {students.map((student, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        {student.imagePreview ? (
+                          <img
+                            src={student.imagePreview}
+                            alt={student.name}
+                            className="w-10 h-10 object-cover rounded-full border-2 border-gray-200"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                            <span className="text-gray-500 text-xs">No Photo</span>
+                          </div>
+                        )}
+                        <span className="font-medium">{student.name}</span>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {student.marks}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Result Poster Image *
+                </label>
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-gray-400">
+                  <div className="space-y-1 text-center">
+                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                    <div className="flex text-sm text-gray-600">
+                      <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                        <span>Upload a file</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleResultPosterSelect}
+                          className="sr-only"
+                        />
+                      </label>
+                      <p className="pl-1">or drag and drop</p>
+                    </div>
+                    <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                  </div>
+                </div>
+                {errors.image && (
+                  <p className="text-red-500 text-xs mt-1">{errors.image}</p>
+                )}
+              </div>
+
+              {previewUrl && (
+                <div className="mt-4">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Preview:</p>
+                  <div className="relative inline-block">
+                    <img
+                      src={previewUrl}
+                      alt="Result Poster Preview"
+                      className="w-full max-w-sm h-auto object-contain rounded-lg border-2 border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPreviewUrl(null);
+                        setSelectedFile(null);
+                      }}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-between pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Back to Students</span>
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50"
+                >
+                  {loading ? 'Saving...' : result ? 'Update Result' : 'Create Result'}
+                </button>
+              </div>
+            </div>
+          )}
         </form>
       </div>
     </div>
   );
-};
+}
 
 export default ResultsManagement;

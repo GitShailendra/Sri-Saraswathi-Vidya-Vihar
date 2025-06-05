@@ -38,6 +38,7 @@ const ResultsShowcase = () => {
           console.log(`Processing student ${index}:`, student);
           
           let imageUrl = 'https://via.placeholder.com/150';
+          let posterUrl = 'https://via.placeholder.com/150';
           
           // Handle image data
           if (student.studentImageData) {
@@ -51,14 +52,27 @@ const ResultsShowcase = () => {
           } else if (student.imageUrl) {
             imageUrl = student.imageUrl;
           }
-          
+          if (student.resultPosterData) {
+  if (student.resultPosterData.startsWith('data:image')) {
+    posterUrl = student.resultPosterData;
+  } else {
+    posterUrl = `data:image/jpeg;base64,${student.resultPosterData}`;
+  }
+} else if (student.studentPosterDataBase64) {
+  posterUrl = student.studentPosterDataBase64;
+} else if (student.posterUrl) {
+  posterUrl = student.posterUrl;
+}
+
           const processed = {
             id: student._id,
             name: student.studentName || 'Student Name',
             rank: student.rank || 1,
             totalStudents: student.totalStudents || 100,
             imageUrl: imageUrl,
+            posterUrl: posterUrl,
             year: student.year || '2023',
+            marks:student.marks,
             isActive: student.isActive !== false // Default to true
           };
           
@@ -256,7 +270,7 @@ const ResultsShowcase = () => {
                             <h4 className="font-semibold text-gray-900 mb-2 truncate text-lg">{student.name}</h4>
                             <div className="bg-white rounded-lg p-3 mb-2 shadow-sm">
                               <p className="text-blue-700 font-bold text-xl">
-                                {student.rank}/{student.totalStudents}
+                                {student.marks}
                               </p>
                               <p className="text-sm text-gray-600">Rank</p>
                             </div>
@@ -292,52 +306,22 @@ const ResultsShowcase = () => {
                 <Tab.Panel key={year} className="rounded-xl bg-white p-6 shadow">
                   <div className="text-center mb-6">
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">{year} Results</h3>
-                    <p className="text-gray-600">
-                      {yearResults[year]?.length || 0} students showcased from {year}
-                    </p>
+                   
                   </div>
                   
-                  {yearResults[year] && yearResults[year].length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                      {yearResults[year].slice(0, 12).map((student) => (
-                        <div 
-                          key={student.id} 
-                          className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-all border border-gray-200"
-                        >
-                          <div className="mx-auto rounded-full overflow-hidden h-20 w-20 mb-3 border-2 border-orange-500">
-                            <img 
-                              src={student.imageUrl} 
-                              alt={student.name}
-                              className="h-full w-full object-cover"
-                              onError={(e) => {
-                                e.currentTarget.src = "https://via.placeholder.com/150";
-                              }}
-                            />
-                          </div>
-                          <h4 className="font-medium text-gray-900 mb-2 truncate">{student.name}</h4>
-                          <div className="bg-white rounded-lg p-2 mb-2 shadow-sm">
-                            <p className="text-blue-700 font-bold text-lg">
-                              {student.rank}/{student.totalStudents}
-                            </p>
-                            <p className="text-xs text-gray-600">Rank</p>
-                          </div>
-                          {student.rank <= 3 && (
-                            <div className="flex justify-center">
-                              <Trophy className={`h-4 w-4 ${
-                                student.rank === 1 ? 'text-yellow-500' : 
-                                student.rank === 2 ? 'text-gray-400' : 'text-orange-600'
-                              }`} />
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Calendar className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-                      <p className="text-gray-600">No results found for {year}</p>
-                    </div>
-                  )}
+                 <div className="flex justify-center">
+  <div className="rounded-lg overflow-hidden border border-gray-200 shadow hover:shadow-lg transition-all max-w-4xl w-full">
+    <img
+      src={yearResults[year][0].posterUrl}
+      alt={`Poster of ${yearResults[year][0].name}`}
+      className="w-full h-auto object-contain"
+      onError={(e) => {
+        e.currentTarget.src = "https://via.placeholder.com/600x800?text=No+Poster";
+      }}
+    />
+  </div>
+</div>
+
                   
                   {yearResults[year] && yearResults[year].length > 12 && (
                     <div className="mt-6 text-center">
